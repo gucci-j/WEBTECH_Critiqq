@@ -1,0 +1,117 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="my-deleteaccount">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+
+      paper-button.custom {
+        --paper-button-ink-color: var(--paper-pink-a200);
+        /* These could also be individually defined for each of the
+          specific css classes, but we'll just do it once as an example */
+        --paper-button-flat-keyboard-focus: {
+          background-color: var(--paper-pink-a200);
+          color: white !important;
+        };
+        --paper-button-raised-keyboard-focus: {
+          background-color: var(--paper-pink-a200) !important;
+          color: white !important;
+        };
+	    }
+      paper-button.custom:hover {
+        background-color: var(--paper-indigo-100);
+      }
+      paper-button.pink {
+       color: var(--paper-pink-a200);
+      }
+      paper-button.indigo {
+        background-color: var(--paper-indigo-500);
+        color: white;
+        --paper-button-raised-keyboard-focus: {
+          background-color: var(--paper-pink-a200) !important;
+          color: white !important;
+        };
+      }
+      paper-button.green {
+        background-color: var(--paper-green-500);
+        color: white;
+      }
+      paper-button.green[active] {
+        background-color: var(--paper-red-500);
+      }
+      paper-button.disabled {
+        color: white;
+      }
+    </style>
+
+    <div class="card">
+      <h1>Delete</h1>
+      <p>Username: <paper-input value = "{{username}}"></paper-input></p>
+      <p>Password: <paper-input type = "password" value = "{{pwd}}"></paper-input></p>
+      <paper-button raised class = "custom green" on-click = "_onDeleteClick">DELETE</paper-button>
+    </div>
+
+    <iron-ajax
+      id = "dbdelete"
+      url= "[[getAjaxBody(username, pwd)]]"
+      method = "DELETE"
+      handle-as = "json"
+      on-response = "onReceivedDB"
+      debounce-duration = "300">
+    </iron-ajax>
+    
+  </template>
+
+  <script>
+    class MyDeleteaccount extends Polymer.Element {
+      static get is() { return 'my-deleteaccount'; }
+
+      ready() {
+				super.ready();
+			}
+
+      static get properties() {
+				return {
+					username: {type: String},
+					pwd: {type: String}
+				}
+			}
+
+      _onDeleteClick() {	
+				this.$.dbdelete.generateRequest();
+			}
+
+      getAjaxBody(usename, pwd) {
+        var url = "http://127.0.0.1:8080/db/coll1/*?filter={'username':'" + this.username + 
+          "', 'pwd':'" + this.pwd + "'}";
+        return url;
+      }
+
+      onReceivedDB(e) {
+				const resp = e.detail.response;
+				if (resp.deleted == "1") {
+					alert( "User has been deleted");
+				}	
+			}
+    }
+    window.customElements.define(MyDeleteaccount.is, MyDeleteaccount);
+  </script>
+</dom-module>

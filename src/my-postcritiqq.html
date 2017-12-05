@@ -1,0 +1,181 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+
+<dom-module id="my-postcritiqq">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      paper-button.green {
+        background-color: var(--paper-green-500);
+        color: white;
+      }
+      paper-button.green[active] {
+        background-color: var(--paper-red-500);
+      }
+    </style>
+
+    <div class="card">
+      <h1>Post Critiqq</h1>
+      <paper-textarea value = "{{critiqq}}" placeholder = "POST CRITIQQ"></paper-textarea>
+      <paper-button class = "green" on-click = "_onPostClick">POST</paper-button>
+      <!--<paper-button raised class="indigo" on-click = "onCreateCollection">CREATE COLLECTION</paper-button>-->
+    </div>
+
+    <div class="card">
+      <h1>See Critiqq</h1>
+      <div id = "results"></div>
+      <paper-button class = "green" on-click = "queryDB">SHOW CRITIQQ</paper-button>
+      <paper-button raised class = "green" on-click = "_onDeleteClick">RESET</paper-button>
+    </div>
+
+    <div id = "test"></div>
+
+    <iron-ajax
+      id = "dbCollectionPost"
+      url = "http://127.0.0.1:8080/db/coll2"
+      params = '{"desc":"this is my first coll created with restheart"}'	
+      method = "PUT"
+      handle-as = "json"
+      on-response = "onSuccessCreate"
+      debounce-duration = "300">
+    </iron-ajax>
+
+    <iron-ajax
+      id = "dbInsertNew1"
+      url = "http://127.0.0.1:8080/db/coll2"
+      body = "[[getPostBody(critiqq)]]"
+      method = "POST"
+      handle-as="json"
+      content-type="application/json"
+      on-response="onSuccessInsert"
+      debounce-duration="300">
+    </iron-ajax>
+    
+    <iron-ajax
+      id = "dbQuery"
+      url="http://127.0.0.1:8080/db/coll2"
+      method = "GET"
+      handle-as="json"
+      on-response="onReceivedDB"
+      debounce-duration="300">
+    </iron-ajax>
+    
+    <iron-ajax
+      id = "dbLike"
+      url="http://127.0.0.1:8080/db/coll2"
+      method = "GET"
+      handle-as="json"
+      on-response="onReceivedDB"
+      debounce-duration="300">
+    </iron-ajax>
+    
+    <iron-ajax
+      id = "dbdelete"
+      url= "http://127.0.0.1:8080/db/coll2/*?filter={'deleteid':'0'}";
+      method = "DELETE"
+      handle-as = "json"
+      on-response = "onReceivedDB2"
+      debounce-duration = "300">
+    </iron-ajax>
+  </template>
+
+  <script>
+    class MyPostcritiqq extends Polymer.Element {
+      static get is() { return 'my-postcritiqq'; }
+      ready() {
+				super.ready();
+			}
+
+      static get properties() {
+				return {
+					critiqq: {type: String},
+          like: {type: Int32Array},
+          deleteid: {type: String}
+				}
+      }
+
+      _onPostClick() {	
+				this.$.dbInsertNew1.generateRequest();
+			}
+
+      _onDeleteClick() {	
+				this.$.dbdelete.generateRequest();
+			}
+
+      _onLikeClick() {	
+				this.$.dbLike.generateRequest();
+        alert("Added!");
+			}
+
+      onCreateCollection() {
+				this.$.dbCollectionPost.generateRequest();
+			}
+
+      queryDB() {
+				this.$.dbQuery.generateRequest();
+			}
+
+			getPostBody(critiqq) {
+				return JSON.stringify({critiqq: this.critiqq, like: 0, deleteid: "0"});
+			}
+      
+      onSuccessInsert(e) {
+				const resp = e.detail.response;
+				var response = JSON.stringify(resp, null, ' ');
+				console.log("Success Insert: " +e.detail.response);
+				alert("Critiqq Added!");
+			}
+
+      onReceivedDB(e) {
+        const resp = e.detail.response;
+				var response = JSON.stringify(resp, null, ' ');
+				this.$.test.innerHTML = response + "\n";
+        const critiqqs = e.detail.response._embedded;
+        var i = 0;
+        var code = "<table><tr><th>Critiqq</th><th>Like</th></tr>";
+        while (i < critiqqs.length) {
+          code += "<tr><td>" + critiqqs[i].critiqq + "</td>"
+          code += "<td>" + critiqqs[i].like + "</td>"
+          code += "<td><paper-button on-click = \"_onLikeClick\">👍<paper-button></td></tr>"
+          i++;
+          console.log(i);
+        }
+        code += "</table>"
+        this.$.results.innerHTML = code;
+			}
+
+      onSuccessCreate(e) {
+				const resp = e.detail.response;
+				var response = JSON.stringify(resp, null, ' ');
+				console.log("Success sent PUT request: " +e.detail.response);
+			}
+
+      onReceivedDB2(e) {
+				const resp = e.detail.response;
+				if (resp.deleted != "0") {
+					alert( "User has been deleted");
+				}	
+			}
+
+    }
+
+    window.customElements.define(MyPostcritiqq.is, MyPostcritiqq);
+  </script>
+</dom-module>
