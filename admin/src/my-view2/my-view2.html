@@ -1,0 +1,243 @@
+<!-- Load the Polymer.Element base class -->
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<script src="../webcomponentsjs/webcomponents-lite.js"></script>
+<link rel="import" href="../bower_components/paper-input-master/paper-input.html">
+<link rel="import" href="../bower_components/paper-input-master/iron-icons.html">
+<link rel="import" href="../bower_components/paper-datatable-master/paper-datatable.html">
+<link rel="import" href="../bower_components/iron-data-table-master/iron-data-table.html">
+<dom-module id="my-view2">
+  <!-- Defines the element's style and local DOM -->
+  <template>
+    <style>
+      :host {
+        display: block;
+
+        padding: 16px;
+      }
+	  table, th, td {
+    border: 1px solid black;
+}
+    </style>
+
+    <h1>Ban,Unban,Promote </h1>
+	
+
+	
+	<input type = "text" id = "choice">
+	<paper-button raised class="indigo" on-click = "queryDBBan">Ban</paper-button>
+	<paper-button raised class="indigo" on-click = "queryDBUnban">Unban</paper-button>
+	<paper-button raised class="indigo" on-click = "queryDBPromote">Promote</paper-button>
+	
+		<iron-ajax
+		id = "dbAjaxPost"
+		url="http://127.0.0.1:8080/critiqq"
+		params='{"desc":"this is library DB"}'
+		method = "PUT"
+		handle-as= "json"
+		on-response="onSuccessCreate"
+		debounce-duration="300">
+	</iron-ajax>
+	
+	<iron-ajax
+		id = "dbCollectionPost"
+		url="http://127.0.0.1:8080/critiqq/user"
+		params='{"desc":"this is user collection"}'	
+		method = "PUT"
+		handle-as="json"
+		on-response="onSuccessCreate"
+		debounce-duration="300">
+	</iron-ajax>
+	
+
+	<iron-ajax
+		id = "dbInsertNew1"
+		url="http://127.0.0.1:8080/critiqq/user"
+		body= '[]'
+		method = "POST"
+		handle-as="json"
+		content-type="application/json"
+		on-response="onSuccessInsert"
+		debounce-duration="300">
+	</iron-ajax>
+	
+	
+	<iron-ajax
+		id = "dbQuery"
+		url="http://127.0.0.1:8080/critiqq/user"
+		method = "GET"
+		handle-as="json"
+		on-response="onReceivedDB"
+		debounce-duration="300">
+	</iron-ajax>
+	<iron-ajax
+		id = "dbQueryBan"
+		url="http://127.0.0.1:8080/critiqq/user"
+		method = "GET"
+		handle-as="json"
+		on-response="onReceivedDBB"
+		debounce-duration="300">
+	</iron-ajax>
+	
+	<iron-ajax
+		id = "dbQueryUnban"
+		url="http://127.0.0.1:8080/critiqq/user"
+		method = "GET"
+		handle-as="json"
+		on-response="onReceivedDBU"
+		debounce-duration="300">
+	</iron-ajax>
+	
+	<iron-ajax
+		id = "dbQueryPromote"
+		url="http://127.0.0.1:8080/critiqq/user"
+		method = "GET"
+		handle-as="json"
+		on-response="onReceivedDBP"
+		debounce-duration="300">
+	</iron-ajax>
+	
+	<!--<iron-ajax
+		id = "dbQuery"
+		url="http://127.0.0.1:8080/db/coll?filter={'name':'restheart'}"
+		method = "GET"
+		handle-as="json"
+		on-response="onReceivedDB"
+		debounce-duration="300">
+	</iron-ajax>-->
+	
+	 <div id="results"></div>
+	 
+  </template>
+  <script>
+    // Your new element extends the Polymer.Element base class
+    class MyView2 extends Polymer.Element {
+      static get is() { return 'my-view2'; }
+	  
+	  ready() {
+		
+		super.ready();
+		this.$.dbAjaxPost.generateRequest();
+		this.$.dbCollectionPost.generateRequest();
+		this.$.dbQuery.generateRequest();
+	  }
+	  
+	 
+	
+	  
+	  performRequest() {
+		this.$.dbAjaxPost.generateRequest();
+	  }
+	  
+	  onCreateCollection() {
+		this.$.dbCollectionPost.generateRequest();
+	  }
+	  
+	  createNewData1() {
+
+		this.$.dbInsertNew1.setAttribute("body", '[{"_id":"'+this.$.username.value+'","fullname":"'+this.$.fullname.value+'","password":"'+this.$.pwd.value+'","email":"'+this.$.email.value+'","state":"Active"}]');
+		this.$.dbInsertNew1.generateRequest();
+	  }
+	  
+	  
+	  
+	  queryDB() {
+		
+		this.$.dbQuery.generateRequest();
+	  }
+	 
+	  queryDBBan() {
+	  
+		this.$.dbQueryBan.setAttribute('url',"http://127.0.0.1:8080/critiqq/user?filter={'_id':'"+this.$.choice.value+"'}");
+		this.$.dbQueryBan.generateRequest();
+	  }
+	  
+	  queryDBUnban() {
+	 
+	  this.$.dbQueryUnban.setAttribute('url',"http://127.0.0.1:8080/critiqq/user?filter={'_id':'"+this.$.choice.value+"'}");
+		this.$.dbQueryUnban.generateRequest();
+	  }
+	  
+	  queryDBPromote() {
+	  this.$.dbQueryPromote.setAttribute('url',"http://127.0.0.1:8080/critiqq/user?filter={'_id':'"+this.$.choice.value+"'}");
+		this.$.dbQueryPromote.generateRequest();
+	  }
+	  
+	  
+	  onSuccessCreate(e) {
+		const resp = e.detail.response;
+		var response = JSON.stringify(resp, null, ' ');
+		console.log("Success sent PUT request: " +e.detail.response);
+		
+	  }
+	  
+	  onSuccessInsert(e) {
+		const resp = e.detail.response;
+		var response = JSON.stringify(resp, null, ' ');
+		
+		
+	  }
+	   onReceivedDBB(e) {
+		const resp = e.detail.response._embedded;
+		var response = JSON.stringify(resp, null, ' ');
+		
+		
+		this.$.dbInsertNew1.setAttribute("body", '[{"_id":"'+this.$.choice.value+'","fullname":"'+resp[0].fullname+'","password":"'+resp[0].password+'","email":"'+resp[0].email+'","state":"Ban"}]');
+		this.$.dbInsertNew1.generateRequest();
+	
+		}
+		onReceivedDBU(e) {
+		const resp = e.detail.response._embedded;
+		var response = JSON.stringify(resp, null, ' ');
+		
+		
+		this.$.dbInsertNew1.setAttribute("body", '[{"_id":"'+this.$.choice.value+'","fullname":"'+resp[0].fullname+'","password":"'+resp[0].password+'","email":"'+resp[0].email+'","state":"Active"}]');
+		this.$.dbInsertNew1.generateRequest();
+		}
+		 onReceivedDBP(e) {
+		const resp = e.detail.response._embedded;
+		var response = JSON.stringify(resp, null, ' ');
+		
+		
+		this.$.dbInsertNew1.setAttribute("body", '[{"_id":"'+this.$.choice.value+'","fullname":"'+resp[0].fullname+'","password":"'+resp[0].password+'","email":"'+resp[0].email+'","state":"Promoted"}]');
+		this.$.dbInsertNew1.generateRequest();
+		}
+	  onReceivedDB(e) {
+		const resp = e.detail.response._embedded;
+		var response = JSON.stringify(resp, null, ' ');
+		
+		this.$.results.innerHTML = resp.length;
+		var code = "";
+		code+= "<table>";
+		code+= '<tr>';
+		code+= '<th></th>';
+		code+= '<th>ID</th>';
+		code+= '<th>Full Name</th>';
+		code+= '<th>Email</th>';
+		code+= '<th>State</th>';
+		code+= '</tr>';
+		
+		for(var i=0;i<resp.length;i++){
+		code+= '<tr>';
+		code+= '<td><input type = "radio" id = "choice" name = "choice" value = "'+resp[i]._id+'"></td>';
+		code+= '<td>'+resp[i]._id+'</td>';
+		code+= '<td>'+resp[i].fullname+'</td>';
+		code+= '<td>'+resp[i].email+'</td>';
+		code+= '<td>'+resp[i].state+'</td>';
+		code+= '</tr>';
+		}
+		code+='</table>';
+		this.$.results.innerHTML = code;
+	  }
+	  
+	  	
+    }
+
+
+    //Now, register your new custom element so the browser can use it
+    customElements.define(MyView2.is, MyView2);
+  </script>
+</dom-module>

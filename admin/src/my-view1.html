@@ -1,0 +1,186 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<script src="../webcomponentsjs/webcomponents-lite.js"></script>
+<link rel="import" href="../bower_components/paper-input-master/paper-input.html">
+<link rel="import" href="../bower_components/paper-input-master/iron-icons.html">
+<link rel="import" href="../bower_components/paper-dropdown-master/paper-dropdown.html">
+
+<dom-module id="my-view1">
+  <template>
+    <style>
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+
+   <h1>Remove User</h1>
+	
+
+	
+
+
+	</br>
+	Username:<input type = "text" id = "username" name = "username">
+	
+	<div id = "request">
+	</div>
+	<paper-button raised class="indigo" on-click = "dbDelete">Remove Account</paper-button>
+	
+		<!--<iron-ajax
+		id = "dbAjaxPost"
+		url="http://127.0.0.1:8080/critiqq"
+		params='{"desc":"this is library DB"}'
+		method = "PUT"
+		handle-as= "json"
+		on-response="onSuccessCreate"
+		debounce-duration="300">
+	</iron-ajax>-->
+	
+	<!--<iron-ajax
+		id = "dbModify"
+		url="http://127.0.0.1:8080/critiqq/user"
+		body="[{'description':'test'}]"
+		method = "POST"
+		handle-as= "json"
+		
+		on-response="onSuccessCreate"
+		debounce-duration="300">
+	</iron-ajax>-->
+	
+	<iron-ajax
+		id = "dbDelete"
+		url="http://127.0.0.1:8080/critiqq/user"
+		body=""
+		method = "DELETE"
+		handle-as= "json"
+		on-response="onSuccessDelete"
+		debounce-duration="300">
+	</iron-ajax>
+	
+	<!--<iron-ajax
+		id = "dbCollectionPost"
+		url="http://127.0.0.1:8080/critiqq/user"
+		params='{"desc":"this is user collection"}'	
+		method = "PUT"
+		handle-as="json"
+		on-response="onSuccessCreate"
+		debounce-duration="300">
+	</iron-ajax>-->
+	
+
+	<!--<iron-ajax
+		id = "dbInsertNew1"
+		url="http://127.0.0.1:8080/critiqq/user"
+		body= '[]'
+		method = "POST"
+		handle-as="json"
+		content-type="application/json"
+		on-response="onSuccessInsert"
+		debounce-duration="300">
+	</iron-ajax>-->
+	
+
+	
+	<!--<iron-ajax
+		id = "dbQuery"
+		url="http://127.0.0.1:8080/critiqq/user?filter={'_id':'Test'}"
+		method = "GET"
+		handle-as="json"
+		on-response="onReceivedDB"
+		debounce-duration="300">
+	</iron-ajax>-->
+	 <div id="results"></div>
+  </template>
+
+  <script>
+    class MyView1 extends Polymer.Element {
+      static get is() { return 'my-view1'; }
+	  
+	  ready() {
+		
+		super.ready();
+		this.$.dbAjaxPost.generateRequest();
+		this.$.dbCollectionPost.generateRequest();
+	  }
+	  
+	 
+	  testClick() {
+		var paperCheckBox = document.createElement('paper-checkbox');
+		paperCheckBox.innerHTML = "Test ";
+		Polymer.dom(this.$.checkbox_list).appendChild(paperCheckBox);
+	  }
+	  
+	  performRequest() {
+		this.$.dbAjaxPost.generateRequest();
+	  }
+	  
+	  onCreateCollection() {
+		this.$.dbCollectionPost.generateRequest();
+	  }
+	  
+	  
+	  dbDelete(){
+      this.$.dbDelete.setAttribute("url","http://127.0.0.1:8080/critiqq/user/" +this.$.username.value);
+	  
+      this.$.dbDelete.generateRequest();
+     }
+	 
+	  dbCreateUser(){
+	  alert('yes');
+
+	  this.$.dbInsertNew1.setAttribute("body", '[{"_id":"'+this.$.username.value+'","state":"Active"}]');
+      this.$.dbInsertNew1.generateRequest();
+    }
+	  
+	  
+	  queryDB() {
+		this.$.dbQuery.setAttribute("url","http://127.0.0.1:8080/critiqq/user?filter={'_id':'" +this.$.username.value+"'}");
+		this.$.dbQuery.generateRequest();
+		
+	  }
+	  
+	  onSuccessCreate(e) {
+		const resp = e.detail.response;
+		var response = JSON.stringify(resp, null, ' ');
+		console.log("Success sent PUT request: " +e.detail.response);
+		this.$.results.innerHTML = resp+"\n";
+	  }
+	  
+	  onSuccessDelete(e) {
+		const resp = e.detail.response;
+		var response = JSON.stringify(resp, null, ' ');
+		console.log("Success sent DELETE request: " +response);
+		alert("User has been removed");
+		
+	  }
+	  
+	  onSuccessInsert(e) {
+		const resp = e.detail.response;
+		var response = JSON.stringify(resp, null, ' ');
+		console.log("User Removed");
+		this.$.results.innerHTML = "User Removed";
+	  }
+	  
+	  onReceivedDB(e) {
+		const resp = e.detail.response._embedded;
+		var response = JSON.stringify(resp, null, ' ');
+	  }
+    }
+
+    window.customElements.define(MyView1.is, MyView1);
+  </script>
+</dom-module>

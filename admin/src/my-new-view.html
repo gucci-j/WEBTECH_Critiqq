@@ -1,0 +1,156 @@
+<!-- Load the Polymer.Element base class -->
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<script src="../webcomponentsjs/webcomponents-lite.js"></script>
+<link rel="import" href="../bower_components/paper-input-master/paper-input.html">
+<link rel="import" href="../bower_components/paper-input-master/iron-icons.html">
+<dom-module id="my-new-view">
+  <!-- Defines the element's style and local DOM -->
+  <template>
+    <style>
+      :host {
+        display: block;
+
+        padding: 16px;
+      }
+    </style>
+
+    <h1>This is adding User </h1>
+	
+	
+	
+	Add User</br>
+	Username:<input type = "text" id = "username" name = "username" >
+	Full name:<input type = "text" id = "fullname" name = "fullname" >
+	Password:<input type = "password" id = "pwd" name = "pwd" >
+	Email:<input type = "text" id = "email" name = "email" >
+	
+	<div id = "request">
+	</div>
+	
+	
+	<paper-button raised class="indigo" on-click = "createNewData1">Add User</paper-button>
+	
+		<iron-ajax
+		id = "dbAjaxPost"
+		url="http://127.0.0.1:8080/critiqq"
+		params='{"desc":"this is library DB"}'
+		method = "PUT"
+		handle-as= "json"
+		on-response="onSuccessCreate"
+		debounce-duration="300">
+	</iron-ajax>
+	
+	<iron-ajax
+		id = "dbCollectionPost"
+		url="http://127.0.0.1:8080/critiqq/user"
+		params='{"desc":"this is user collection"}'	
+		method = "PUT"
+		handle-as="json"
+		on-response="onSuccessCreate"
+		debounce-duration="300">
+	</iron-ajax>
+	
+
+	<iron-ajax
+		id = "dbInsertNew1"
+		url="http://127.0.0.1:8080/critiqq/user"
+		body= '[]'
+		method = "POST"
+		handle-as="json"
+		content-type="application/json"
+		on-response="onSuccessInsert"
+		debounce-duration="300">
+	</iron-ajax>
+	
+	
+	<iron-ajax
+		id = "dbQuery"
+		url="http://127.0.0.1:8080/critiqq/user"
+		method = "GET"
+		handle-as="json"
+		on-response="onReceivedDB"
+		debounce-duration="300">
+	</iron-ajax>
+	
+	<!--<iron-ajax
+		id = "dbQuery"
+		url="http://127.0.0.1:8080/db/coll?filter={'name':'restheart'}"
+		method = "GET"
+		handle-as="json"
+		on-response="onReceivedDB"
+		debounce-duration="300">
+	</iron-ajax>-->
+	
+	 <div id="results"></div>
+	
+  </template>
+  <script>
+    // Your new element extends the Polymer.Element base class
+    class MyNewView extends Polymer.Element {
+      static get is() { return 'my-new-view'; }
+	  
+	  ready() {
+		
+		super.ready();
+		this.$.dbAjaxPost.generateRequest();
+		this.$.dbCollectionPost.generateRequest();
+		this.$.dbQuery.generateRequest();
+	  }
+	  
+	 
+	  testClick() {
+		var paperCheckBox = document.createElement('paper-checkbox');
+		paperCheckBox.innerHTML = "Test ";
+		Polymer.dom(this.$.checkbox_list).appendChild(paperCheckBox);
+	  }
+	  
+	  performRequest() {
+		this.$.dbAjaxPost.generateRequest();
+	  }
+	  
+	  onCreateCollection() {
+		this.$.dbCollectionPost.generateRequest();
+	  }
+	  
+	  createNewData1() {
+
+		this.$.dbInsertNew1.setAttribute("body", '[{"_id":"'+this.$.username.value+'","fullname":"'+this.$.fullname.value+'","password":"'+this.$.pwd.value+'","email":"'+this.$.email.value+'","state":"Active"}]');
+		this.$.dbInsertNew1.generateRequest();
+	  }
+	  
+	  
+	  
+	  queryDB() {
+		this.$.dbQuery.generateRequest();
+	  }
+	  
+	  onSuccessCreate(e) {
+		const resp = e.detail.response;
+		var response = JSON.stringify(resp, null, ' ');
+		console.log("Success sent PUT request: " +e.detail.response);
+		this.$.results.innerHTML = "\n";
+	  }
+	  
+	  onSuccessInsert(e) {
+		const resp = e.detail.response;
+		var response = JSON.stringify(resp, null, ' ');
+		console.log("User Added");
+		this.$.results.innerHTML = "User Added";
+	  }
+	  
+	  onReceivedDB(e) {
+		const resp = e.detail.response._embedded;
+		var response = JSON.stringify(resp, null, ' ');
+		
+	  }
+    }
+
+
+    //Now, register your new custom element so the browser can use it
+    customElements.define(MyNewView.is, MyNewView);
+  </script>
+</dom-module>
